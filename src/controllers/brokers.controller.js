@@ -1,4 +1,3 @@
-const { config } = require('dotenv');
 const { sequelize } = require('../models/index');
 const chartConfig = require('../config/config.js');
 
