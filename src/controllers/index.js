@@ -1,0 +1,1 @@
+module.exports.brokerController = require('./brokers.controller');
