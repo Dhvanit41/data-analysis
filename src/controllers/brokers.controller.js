@@ -5,21 +5,21 @@ const healthcheck = (req, res) => {
   res.sendStatus(200);
 };
 
-const getTrend = async (req, res) => {
+async function getTrend(req, res) {
   try {
-   const [brokers,newListing,chartTableData] = await Promise.all([
-       sequelize.query(`select s.title, date_trunc('month', dh.date) as "month", count(dh.id) as count,
+    const [brokers, newListing, chartTableData] = await Promise.all([
+      sequelize.query(`select s.title, date_trunc('month', dh.date) as "month", count(dh.id) as count,
  round(avg(dh.revenue),2) as revenue from public.sites s inner join public.deals d on d.site_id = s.id 
 inner join deals_history 
 dh on dh.deal_id = d.id group by month,
  s.title;
 `),
 
-       sequelize.query(`select s.title, date_trunc('month', dh.date) as "month", count(dh.id) as count from sites s 
+      sequelize.query(`select s.title, date_trunc('month', dh.date) as "month", count(dh.id) as count from sites s 
 left join deals_history dh on dh.site_id = s.id  where status = 'New Listing' group by s.title, month;
 `),
 
-       sequelize.query(
+      sequelize.query(
         `select
 	deal_id as id,
 	date_part('month',date_trunc('month', dh.date)) as "month" ,
@@ -31,7 +31,7 @@ from
 	deals_history dh
 join sites s on
 	s.id = dh.site_id `
-      )
+      ),
     ]);
 
     const preparedData = prepareData(
@@ -59,13 +59,16 @@ join sites s on
       error: e.message,
     });
   }
-};
+}
 
 function prepareData(brokers, count = false) {
   const responseData = [];
   const distinctBrokers = [...new Set([...brokers.map((b) => b.title)])];
   for (const singleBroker of distinctBrokers) {
-    let xAxisDates = getXAxisDates(chartConfig.chart.start, chartConfig.chart.end);
+    let xAxisDates = getXAxisDates(
+      chartConfig.chart.start,
+      chartConfig.chart.end
+    );
     for (const bdata of brokers) {
       if (bdata.title == singleBroker) {
         const dateObj = new Date(bdata.month);
